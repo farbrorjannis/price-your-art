@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Price Your Art – Free Art Pricing Calculator | Konstlabbet</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --cream:#faf8f3;--warm:#fff9f2;--dark:#2c1f10;--mid:#6b4c2a;
+  --light:#c4a882;--ochre:#c07d2b;--ochre-l:#f0e0c0;--border:#ddd0bc;
+  --green:#2d6a4f;--green-l:#d8f3dc;--r:10px;
+}
+body{background:var(--cream);font-family:'Lato',sans-serif;color:var(--dark);min-height:100vh;padding-bottom:3rem;}
+
+header{background:var(--dark);padding:1rem 1.5rem;display:flex;align-items:baseline;gap:1rem;flex-wrap:wrap;}
+header h1{font-family:'Playfair Display',serif;font-size:1.4rem;color:var(--ochre-l);font-weight:500;}
+header span{font-size:0.75rem;color:var(--light);letter-spacing:0.08em;text-transform:uppercase;}
+
+.container{max-width:780px;margin:0 auto;padding:1.5rem 1rem;}
+
+/* Method tabs */
+.method-tabs{display:flex;gap:0;border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:1.5rem;}
+.tab{flex:1;padding:0.65rem 0.5rem;text-align:center;background:var(--warm);border:none;font-family:'Lato',sans-serif;font-size:0.82rem;font-weight:700;color:var(--mid);cursor:pointer;transition:all 0.15s;border-right:1.5px solid var(--border);line-height:1.3;}
+.tab:last-child{border-right:none;}
+.tab.active{background:var(--dark);color:var(--ochre-l);}
+.tab:hover:not(.active){background:var(--ochre-l);}
+
+/* Cards */
+.card{background:var(--warm);border:1.5px solid var(--border);border-radius:var(--r);padding:1.25rem;margin-bottom:1rem;}
+.card-title{font-family:'Playfair Display',serif;font-size:1rem;color:var(--dark);margin-bottom:0.25rem;font-weight:500;}
+.card-desc{font-size:0.82rem;color:var(--mid);margin-bottom:1.1rem;line-height:1.5;}
+
+/* Form fields */
+.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.8rem;}
+.field-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.8rem;}
+@media(max-width:480px){.field-grid,.field-grid-3{grid-template-columns:1fr 1fr;}}
+.field{display:flex;flex-direction:column;gap:0.3rem;}
+.field label{font-size:0.78rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--mid);font-weight:700;}
+.field input,.field select{
+  padding:0.55rem 0.75rem;
+  border:1.5px solid var(--border);
+  border-radius:8px;
+  background:var(--cream);
+  font-family:'Lato',sans-serif;
+  font-size:0.92rem;
+  color:var(--dark);
+  transition:border-color 0.15s;
+  width:100%;
+}
+.field input:focus,.field select:focus{outline:none;border-color:var(--ochre);}
+.field .hint{font-size:0.73rem;color:var(--light);margin-top:0.15rem;}
+
+/* Career level selector */
+.career-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:0.4rem;margin-top:0.5rem;}
+.career-btn{
+  padding:0.5rem 0.4rem;
+  border:1.5px solid var(--border);
+  border-radius:8px;
+  background:var(--cream);
+  text-align:center;
+  cursor:pointer;
+  transition:all 0.15s;
+}
+.career-btn:hover{border-color:var(--ochre);}
+.career-btn.active{background:var(--dark);border-color:var(--dark);}
+.career-btn .lvl{font-size:0.75rem;font-weight:700;color:var(--mid);display:block;text-transform:uppercase;letter-spacing:0.05em;}
+.career-btn .idx{font-size:1rem;font-weight:700;color:var(--ochre);}
+.career-btn.active .lvl{color:var(--ochre-l);}
+.career-btn.active .idx{color:var(--ochre-l);}
+
+/* Unit toggle */
+.unit-toggle{display:flex;gap:0.3rem;margin-bottom:0.8rem;}
+.unit-btn{padding:0.3rem 0.9rem;border:1.5px solid var(--border);border-radius:20px;background:var(--cream);color:var(--mid);font-family:'Lato',sans-serif;font-size:0.82rem;font-weight:700;cursor:pointer;transition:all 0.15s;}
+.unit-btn.active{background:var(--dark);border-color:var(--dark);color:var(--ochre-l);}
+
+/* Currency */
+.currency-row{display:flex;gap:0.4rem;flex-wrap:wrap;margin-bottom:0.8rem;}
+.cur-btn{padding:0.3rem 0.8rem;border:1.5px solid var(--border);border-radius:20px;background:var(--cream);color:var(--mid);font-family:'Lato',sans-serif;font-size:0.82rem;font-weight:700;cursor:pointer;transition:all 0.15s;}
+.cur-btn.active{background:var(--ochre);border-color:var(--ochre);color:white;}
+
+/* Calculate button */
+.btn-calc{width:100%;padding:0.9rem;background:var(--dark);color:var(--ochre-l);border:none;border-radius:var(--r);font-family:'Lato',sans-serif;font-size:1rem;font-weight:700;letter-spacing:0.05em;cursor:pointer;transition:background 0.15s;margin-top:0.8rem;}
+.btn-calc:hover{background:var(--ochre);color:var(--dark);}
+
+/* Results */
+.results{display:none;margin-top:1rem;}
+.results.visible{display:block;}
+.result-main{background:var(--dark);border-radius:var(--r);padding:1.5rem;text-align:center;margin-bottom:0.8rem;}
+.result-label{font-size:0.8rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--light);margin-bottom:0.4rem;}
+.result-price{font-family:'Playfair Display',serif;font-size:2.8rem;color:var(--ochre-l);font-weight:500;line-height:1;}
+.result-sub{font-size:0.82rem;color:var(--light);margin-top:0.4rem;}
+
+.result-breakdown{background:var(--warm);border:1.5px solid var(--border);border-radius:var(--r);padding:1rem;}
+.breakdown-row{display:flex;justify-content:space-between;align-items:center;padding:0.4rem 0;border-bottom:1px solid var(--border);font-size:0.88rem;}
+.breakdown-row:last-child{border-bottom:none;font-weight:700;padding-top:0.6rem;}
+.breakdown-label{color:var(--mid);}
+.breakdown-val{color:var(--dark);font-weight:700;}
+
+/* Compare panel */
+.compare-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.6rem;margin-top:1rem;}
+@media(max-width:480px){.compare-grid{grid-template-columns:1fr;}}
+.compare-card{background:var(--warm);border:1.5px solid var(--border);border-radius:var(--r);padding:0.9rem;text-align:center;}
+.compare-card .c-method{font-size:0.72rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--mid);margin-bottom:0.3rem;font-weight:700;}
+.compare-card .c-price{font-family:'Playfair Display',serif;font-size:1.5rem;color:var(--ochre);font-weight:500;}
+.compare-card .c-note{font-size:0.72rem;color:var(--light);margin-top:0.2rem;}
+.compare-card.highlight{border-color:var(--ochre);background:var(--ochre-l);}
+
+/* Info box */
+.info-box{background:var(--ochre-l);border-left:3px solid var(--ochre);border-radius:0 var(--r) var(--r) 0;padding:0.8rem 1rem;font-size:0.82rem;color:var(--mid);line-height:1.6;margin-top:0.8rem;}
+.info-box strong{color:var(--dark);}
+
+/* Notice box */
+.notice-box{background:#fff3cd;border-left:3px solid #c07d2b;border-radius:0 var(--r) var(--r) 0;padding:0.7rem 1rem;font-size:0.78rem;color:#5a3e10;line-height:1.5;margin-top:0.7rem;}
+.notice-box strong{color:var(--dark);}
+
+/* Method panels */
+.method-panel{display:none;}
+.method-panel.active{display:block;}
+
+/* Section label */
+.section-label{font-size:0.78rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--mid);font-weight:700;margin-bottom:0.5rem;margin-top:1rem;}
+
+footer{text-align:center;margin-top:2.5rem;font-size:0.75rem;color:var(--light);}
+footer a{color:var(--ochre);text-decoration:none;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Price Your Art</h1>
+  <span>Konstlabbet · akvarellskiss.se</span>
+</header>
+
+<div class="container">
+
+  <!-- Currency -->
+  <div style="margin-bottom:1rem;">
+    <div class="section-label">Currency</div>
+    <div class="currency-row" id="currencyRow">
+      <button class="cur-btn active" data-cur="EUR">€ EUR</button>
+      <button class="cur-btn" data-cur="USD">$ USD</button>
+      <button class="cur-btn" data-cur="GBP">£ GBP</button>
+      <button class="cur-btn" data-cur="SEK">kr SEK</button>
+    </div>
+  </div>
+
+  <!-- Method tabs -->
+  <div class="method-tabs">
+    <button class="tab active" data-method="index">Index Formula<br><span style="font-weight:300;font-size:0.72rem">(H+W) × index</span></button>
+    <button class="tab" data-method="sqarea">Square Area<br><span style="font-weight:300;font-size:0.72rem">H×W × rate</span></button>
+    <button class="tab" data-method="time">Time + Materials<br><span style="font-weight:300;font-size:0.72rem">hours + costs</span></button>
+  </div>
+
+  <!-- METHOD 1: Index formula -->
+  <div class="method-panel active" id="panel-index">
+    <div class="card">
+      <div class="card-title">Index Formula</div>
+      <div class="card-desc">Used internationally, especially in Europe. Add height and width, multiply by your index number based on career level. Formula: <strong>(H + W) × Index = Price</strong></div>
+
+      <div class="notice-box">
+        <strong>About this formula:</strong> The index system was developed in Europe using <strong>centimetres and EUR</strong>. Index values below are calibrated per currency. If you enter inches, dimensions are <em>automatically converted to cm</em> internally so the index values stay correct — just enter your actual size in whichever unit you prefer.
+      </div>
+
+      <div class="section-label" style="margin-top:1rem;">Units</div>
+      <div class="unit-toggle">
+        <button class="unit-btn active" data-unit="cm" data-method="index">cm</button>
+        <button class="unit-btn" data-unit="in" data-method="index">inches</button>
+      </div>
+
+      <div class="field-grid">
+        <div class="field">
+          <label>Height <span id="unit-label-index">cm</span></label>
+          <input type="number" id="idx-h" value="40" min="1">
+        </div>
+        <div class="field">
+          <label>Width <span id="unit-label-index2">cm</span></label>
+          <input type="number" id="idx-w" value="30" min="1">
+        </div>
+      </div>
+
+      <div class="section-label" style="margin-top:1rem;">Career level &amp; index number</div>
+      <div class="career-grid" id="careerGrid">
+        <!-- Rebuilt by JS on currency change -->
+      </div>
+
+      <div class="field" style="margin-top:0.8rem;">
+        <label>Custom index (override career level)</label>
+        <input type="number" id="idx-custom" placeholder="e.g. 14" min="1" max="500">
+        <span class="hint">Leave empty to use career level index</span>
+      </div>
+
+      <div class="field" style="margin-top:0.8rem;">
+        <label>Materials cost <span id="idx-cur-label">€</span></label>
+        <input type="number" id="idx-mat" value="0" min="0">
+      </div>
+    </div>
+  </div>
+
+  <!-- METHOD 2: Square area -->
+  <div class="method-panel" id="panel-sqarea">
+    <div class="card">
+      <div class="card-title">Square Area Formula</div>
+      <div class="card-desc">Popular in the USA. Multiply width by height to get total area, then multiply by your rate per square unit. Formula: <strong>H × W × rate = Price</strong></div>
+
+      <div class="notice-box">
+        <strong>Units matter here:</strong> Rate per sq&nbsp;cm and rate per sq&nbsp;inch are <em>very</em> different numbers (1&nbsp;sq&nbsp;inch&nbsp;=&nbsp;6.45&nbsp;sq&nbsp;cm). The rate hint and default update automatically when you switch units — do not use the same number for both.
+      </div>
+
+      <div class="section-label">Units</div>
+      <div class="unit-toggle">
+        <button class="unit-btn active" data-unit="in" data-method="sqarea">Square inches</button>
+        <button class="unit-btn" data-unit="cm" data-method="sqarea">Square cm</button>
+      </div>
+
+      <div class="field-grid">
+        <div class="field">
+          <label>Height <span id="unit-label-sq">inches</span></label>
+          <input type="number" id="sq-h" value="16" min="1">
+        </div>
+        <div class="field">
+          <label>Width <span id="unit-label-sq2">inches</span></label>
+          <input type="number" id="sq-w" value="12" min="1">
+        </div>
+      </div>
+
+      <div class="field" style="margin-top:0.8rem;">
+        <label>Rate per square <span id="sq-unit-label">inch</span> <span id="sq-cur-label">($)</span></label>
+        <input type="number" id="sq-rate" value="4" min="0.01" step="0.5">
+        <span class="hint" id="sq-rate-hint">Emerging: $2–6 · Established: $6–15 · Well-known: $15–30+</span>
+      </div>
+
+      <div class="field" style="margin-top:0.8rem;">
+        <label>Materials cost <span id="sq-cur-label2">$</span></label>
+        <input type="number" id="sq-mat" value="0" min="0">
+        <span class="hint">Materials cost is doubled to cover gallery commission</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- METHOD 3: Time + Materials -->
+  <div class="method-panel" id="panel-time">
+    <div class="card">
+      <div class="card-title">Time + Materials Formula</div>
+      <div class="card-desc">Universal method. Pay yourself an hourly wage, add material costs, and optionally add a profit margin. Formula: <strong>(Hours × Hourly rate) + Materials = Price</strong></div>
+
+      <div class="field-grid-3">
+        <div class="field">
+          <label>Hours spent</label>
+          <input type="number" id="tm-hours" value="8" min="0.5" step="0.5">
+        </div>
+        <div class="field">
+          <label>Hourly rate <span id="tm-cur-label">€</span></label>
+          <input type="number" id="tm-rate" value="25" min="1">
+          <span class="hint" id="tm-rate-hint">Min. wage or desired wage</span>
+        </div>
+        <div class="field">
+          <label>Materials <span id="tm-cur-label2">€</span></label>
+          <input type="number" id="tm-mat" value="30" min="0">
+        </div>
+      </div>
+
+      <div class="field" style="margin-top:0.8rem;">
+        <label>Profit margin %</label>
+        <input type="number" id="tm-profit" value="20" min="0" max="200">
+        <span class="hint">Add a percentage on top to cover overhead and profit</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Shared: Gallery commission -->
+  <div class="card">
+    <div class="card-title">Gallery commission</div>
+    <div class="card-desc">If selling through a gallery, adjust your price so you still receive your target amount after their cut.</div>
+    <div class="field-grid">
+      <div class="field">
+        <label>Gallery commission %</label>
+        <input type="number" id="gallery-pct" value="0" min="0" max="70">
+        <span class="hint">Standard gallery: 40–50%</span>
+      </div>
+      <div class="field">
+        <label>Selling venue</label>
+        <select id="venue">
+          <option value="direct">Direct from studio (0%)</option>
+          <option value="online">Online platform (~40%)</option>
+          <option value="gallery">Gallery (~50%)</option>
+          <option value="custom">Custom (use field)</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-calc" id="btnCalc">Calculate Price</button>
+
+  <!-- Results -->
+  <div class="results" id="results">
+    <div class="result-main">
+      <div class="result-label">Suggested selling price</div>
+      <div class="result-price" id="res-price">—</div>
+      <div class="result-sub" id="res-sub"></div>
+    </div>
+
+    <div class="result-breakdown" id="res-breakdown"></div>
+
+    <div class="info-box" id="res-info"></div>
+
+    <!-- Compare all three methods -->
+    <div class="section-label" style="margin-top:1.2rem;">Compare all three methods</div>
+    <div style="font-size:0.75rem;color:var(--light);margin-bottom:0.5rem;">Note: comparison uses each method's own inputs — make sure dimensions/hours are set consistently across tabs for a fair comparison.</div>
+    <div class="compare-grid" id="compareGrid"></div>
+  </div>
+
+</div>
+
+<footer>
+  <a href="https://www.akvarellskiss.se" target="_blank">akvarellskiss.se</a> · Konstlabbet · Free tools for artists
+</footer>
+
+<script>
+// ─── Currency configuration ───────────────────────────────────────────────
+// Each currency has:
+//   career: array of {label, range, mid} — index values calibrated for that currency + cm
+//   hourlyDefault: sensible default hourly rate
+//   sqIn: {rate, hint} — per square inch defaults
+//   sqCm: {rate, hint} — per square cm defaults
+//   roundStep: rounding granularity for fmt()
+
+const CFG = {
+  EUR: {
+    sym: '€', code: 'EUR', roundStep: 5,
+    // French/European index system — the original calibration
+    career: [
+      { label: 'Hobby',          range: '1–2',    mid: 1.5 },
+      { label: 'Amateur',        range: '2–10',   mid: 6   },
+      { label: 'New emerging',   range: '10–18',  mid: 14  },
+      { label: 'Adv. emerging',  range: '18–24',  mid: 21  },
+      { label: 'Mid-career',     range: '24–40',  mid: 32  },
+    ],
+    hourlyDefault: 25,
+    hourlyHint: 'Freelance rate in Europe: €20–50/h',
+    sqIn: { rate: 2.5,  hint: 'Emerging: €1.5–4 · Established: €4–10 · Well-known: €10–25+' },
+    sqCm: { rate: 0.40, hint: 'Emerging: €0.2–0.6 · Established: €0.6–1.6 · Well-known: €1.6–4+' },
+  },
+  USD: {
+    sym: '$', code: 'USD', roundStep: 5,
+    // USD ≈ EUR in value; sq inch is the dominant US method
+    career: [
+      { label: 'Hobby',          range: '1–3',    mid: 2   },
+      { label: 'Amateur',        range: '3–12',   mid: 7   },
+      { label: 'New emerging',   range: '12–20',  mid: 16  },
+      { label: 'Adv. emerging',  range: '20–28',  mid: 24  },
+      { label: 'Mid-career',     range: '28–45',  mid: 36  },
+    ],
+    hourlyDefault: 30,
+    hourlyHint: 'Freelance rate in the US: $25–60/h',
+    sqIn: { rate: 4,    hint: 'Emerging: $2–6 · Established: $6–15 · Well-known: $15–30+' },
+    sqCm: { rate: 0.62, hint: 'Emerging: $0.3–0.9 · Established: $0.9–2.3 · Well-known: $2.3–5+' },
+  },
+  GBP: {
+    sym: '£', code: 'GBP', roundStep: 5,
+    // GBP is stronger than EUR; indices slightly lower
+    career: [
+      { label: 'Hobby',          range: '1–2',    mid: 1.5 },
+      { label: 'Amateur',        range: '2–8',    mid: 5   },
+      { label: 'New emerging',   range: '8–15',   mid: 12  },
+      { label: 'Adv. emerging',  range: '15–22',  mid: 18  },
+      { label: 'Mid-career',     range: '22–35',  mid: 28  },
+    ],
+    hourlyDefault: 20,
+    hourlyHint: 'Freelance rate in the UK: £18–45/h',
+    sqIn: { rate: 2,    hint: 'Emerging: £1–3 · Established: £3–8 · Well-known: £8–20+' },
+    sqCm: { rate: 0.31, hint: 'Emerging: £0.15–0.5 · Established: £0.5–1.2 · Well-known: £1.2–3+' },
+  },
+  SEK: {
+    sym: 'kr', code: 'SEK', roundStep: 50,
+    // SEK ≈ 1/11 EUR — indices are ~10× higher than EUR to produce realistic SEK prices
+    career: [
+      { label: 'Hobby',          range: '10–25',   mid: 18  },
+      { label: 'Amateur',        range: '25–100',  mid: 65  },
+      { label: 'New emerging',   range: '100–180', mid: 140 },
+      { label: 'Adv. emerging',  range: '180–240', mid: 210 },
+      { label: 'Mid-career',     range: '240–400', mid: 320 },
+    ],
+    hourlyDefault: 250,
+    hourlyHint: 'Frilansarvode i Sverige: 200–500 kr/h',
+    sqIn: { rate: 10,  hint: 'Emerging: 8–16 kr · Established: 16–40 kr · Well-known: 40–80+ kr' },
+    sqCm: { rate: 1.5, hint: 'Emerging: 1–2.5 kr · Established: 2.5–6 kr · Well-known: 6–12+ kr' },
+  },
+};
+
+// ─── State ────────────────────────────────────────────────────────────────
+let cur = CFG.EUR;
+let unitIndex = 'cm';   // 'cm' or 'in' — for index method input display
+let unitSq    = 'in';   // 'in' or 'cm' — for square area method
+let activeMethod    = 'index';
+let activeCareerMid = 14;
+let galleryPct      = 0;
+
+// ─── Helpers ──────────────────────────────────────────────────────────────
+function fmt(num) {
+  const step    = cur.roundStep;
+  const rounded = Math.round(num / step) * step;
+  // Use a non-breaking space between symbol and number for SEK
+  if (cur.code === 'SEK') return rounded.toLocaleString('sv-SE') + '\u00a0kr';
+  return cur.sym + rounded.toLocaleString('en-US');
+}
+
+function fmtExact(num) {
+  // Unrounded display for breakdown labels
+  if (cur.code === 'SEK') return Math.round(num).toLocaleString('sv-SE') + '\u00a0kr';
+  return cur.sym + Math.round(num).toLocaleString('en-US');
+}
+
+function applyGallery(price, pct) {
+  if (pct <= 0) return price;
+  return price / (1 - pct / 100);
+}
+
+// ─── Currency buttons ─────────────────────────────────────────────────────
+document.querySelectorAll('.cur-btn').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.cur-btn').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    cur = CFG[b.dataset.cur];
+    applyNewCurrency();
+    document.getElementById('results').classList.remove('visible');
+  });
+});
+
+function applyNewCurrency() {
+  // Rebuild career buttons with this currency's calibrated ranges
+  buildCareerButtons();
+
+  // Update all currency symbol labels
+  document.querySelectorAll('[id$="-cur-label"], [id$="-cur-label2"]').forEach(el => {
+    el.textContent = cur.sym;
+  });
+
+  // Update hourly rate default + hint
+  document.getElementById('tm-rate').value = cur.hourlyDefault;
+  document.getElementById('tm-rate-hint').textContent = cur.hourlyHint;
+
+  // Update sq rate default + hint for current unit
+  updateSqRateForUnit();
+}
+
+// ─── Career buttons ───────────────────────────────────────────────────────
+function buildCareerButtons() {
+  const grid = document.getElementById('careerGrid');
+  const careerLevels = cur.career;
+  // Remember active level by position if possible
+  const prevMid = activeCareerMid;
+  grid.innerHTML = '';
+
+  careerLevels.forEach((c, i) => {
+    const btn = document.createElement('div');
+    btn.className = 'career-btn';
+    btn.dataset.mid = c.mid;
+    // Mark the middle (new emerging = index 2) as default active on first build
+    if (c.mid === prevMid || (prevMid === null && i === 2)) {
+      btn.classList.add('active');
+      activeCareerMid = c.mid;
+    }
+    btn.innerHTML = `<span class="lvl">${c.label}</span><span class="idx">${c.range}</span>`;
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.career-btn').forEach(x => x.classList.remove('active'));
+      btn.classList.add('active');
+      activeCareerMid = parseFloat(btn.dataset.mid);
+      document.getElementById('idx-custom').value = '';
+    });
+    grid.appendChild(btn);
+  });
+
+  // If none matched, activate the new-emerging (index 2)
+  const activeBtns = grid.querySelectorAll('.career-btn.active');
+  if (activeBtns.length === 0) {
+    const fallback = grid.querySelectorAll('.career-btn')[2];
+    if (fallback) {
+      fallback.classList.add('active');
+      activeCareerMid = parseFloat(fallback.dataset.mid);
+    }
+  }
+}
+
+// ─── Method tabs ──────────────────────────────────────────────────────────
+document.querySelectorAll('.tab').forEach(t => {
+  t.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.method-panel').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    activeMethod = t.dataset.method;
+    document.getElementById('panel-' + activeMethod).classList.add('active');
+    document.getElementById('results').classList.remove('visible');
+  });
+});
+
+// ─── Unit toggles ─────────────────────────────────────────────────────────
+document.querySelectorAll('.unit-btn').forEach(b => {
+  b.addEventListener('click', () => {
+    const method = b.dataset.method;
+    document.querySelectorAll(`.unit-btn[data-method="${method}"]`).forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+
+    if (method === 'index') {
+      unitIndex = b.dataset.unit;
+      const lbl = unitIndex === 'cm' ? 'cm' : 'inches';
+      document.getElementById('unit-label-index').textContent  = lbl;
+      document.getElementById('unit-label-index2').textContent = lbl;
+      // No rate changes needed — dimensions are converted to cm internally
+
+    } else {
+      unitSq = b.dataset.unit;
+      const lbl = unitSq === 'in' ? 'inches' : 'cm';
+      document.getElementById('unit-label-sq').textContent  = lbl;
+      document.getElementById('unit-label-sq2').textContent = lbl;
+      document.getElementById('sq-unit-label').textContent  = unitSq === 'in' ? 'inch' : 'cm';
+      // Update rate default and hint when switching sq units
+      updateSqRateForUnit();
+    }
+  });
+});
+
+function updateSqRateForUnit() {
+  const cfg  = unitSq === 'in' ? cur.sqIn : cur.sqCm;
+  document.getElementById('sq-rate').value           = cfg.rate;
+  document.getElementById('sq-rate-hint').textContent = cfg.hint;
+  document.getElementById('sq-cur-label').textContent  = '(' + cur.sym + ')';
+  document.getElementById('sq-cur-label2').textContent = cur.sym;
+}
+
+// ─── Venue preset ─────────────────────────────────────────────────────────
+document.getElementById('venue').addEventListener('change', function() {
+  const map = { direct: 0, online: 40, gallery: 50, custom: galleryPct };
+  document.getElementById('gallery-pct').value = map[this.value];
+});
+
+// ─── Calculate ────────────────────────────────────────────────────────────
+document.getElementById('btnCalc').addEventListener('click', () => {
+  galleryPct = parseFloat(document.getElementById('gallery-pct').value) || 0;
+
+  let basePrice = 0;
+  let breakdown = [];
+  let infoText  = '';
+
+  // ── Index formula ──
+  if (activeMethod === 'index') {
+    const hInput    = parseFloat(document.getElementById('idx-h').value) || 0;
+    const wInput    = parseFloat(document.getElementById('idx-w').value) || 0;
+    // Always work in cm internally; convert if user is entering inches
+    const CM        = unitIndex === 'in' ? 2.54 : 1;
+    const h         = hInput * CM;
+    const w         = wInput * CM;
+    const customIdx = parseFloat(document.getElementById('idx-custom').value);
+    const idx       = customIdx > 0 ? customIdx : activeCareerMid;
+    const mat       = parseFloat(document.getElementById('idx-mat').value) || 0;
+    const sum       = h + w;
+    basePrice = sum * idx + mat;
+
+    const unitNote = unitIndex === 'in'
+      ? ` (entered as ${hInput}+${wInput} in → converted to ${Math.round(h)}+${Math.round(w)} cm)`
+      : '';
+
+    breakdown = [
+      ['Artwork dimensions (cm)', `${Math.round(h)} + ${Math.round(w)} = ${Math.round(sum)} cm${unitNote}`],
+      ['Index number', idx],
+      ['Size × index', fmtExact(sum * idx)],
+      ['Materials', fmtExact(mat)],
+      ['Base price', fmtExact(basePrice)],
+    ];
+    infoText = `<strong>Index formula:</strong> (${Math.round(h)} + ${Math.round(w)}) × ${idx} + ${cur.sym}${mat} materials = ${fmtExact(basePrice)}. The index number reflects your career level in <em>${cur.code}</em> — raise it gradually as your reputation and sales grow.`;
+
+  // ── Square area formula ──
+  } else if (activeMethod === 'sqarea') {
+    const h    = parseFloat(document.getElementById('sq-h').value) || 0;
+    const w    = parseFloat(document.getElementById('sq-w').value) || 0;
+    const rate = parseFloat(document.getElementById('sq-rate').value) || 0;
+    const mat  = parseFloat(document.getElementById('sq-mat').value) || 0;
+    const area = h * w;
+    basePrice  = area * rate + (mat * 2);
+    const uLabel = unitSq === 'in' ? 'sq in' : 'sq cm';
+    breakdown = [
+      ['Artwork area', `${h} × ${w} = ${area} ${uLabel}`],
+      [`Rate per ${uLabel}`, cur.sym + rate],
+      ['Area × rate', fmtExact(area * rate)],
+      ['Materials × 2', fmtExact(mat * 2)],
+      ['Base price', fmtExact(basePrice)],
+    ];
+    infoText = `<strong>Square area formula:</strong> ${area} ${uLabel} × ${cur.sym}${rate} + (${cur.sym}${mat} materials × 2) = ${fmtExact(basePrice)}. Materials are doubled so the cost is covered even if a gallery takes 50% commission.`;
+
+  // ── Time + Materials ──
+  } else {
+    const hours  = parseFloat(document.getElementById('tm-hours').value) || 0;
+    const rate   = parseFloat(document.getElementById('tm-rate').value)  || 0;
+    const mat    = parseFloat(document.getElementById('tm-mat').value)   || 0;
+    const profit = parseFloat(document.getElementById('tm-profit').value) || 0;
+    const labor  = hours * rate;
+    const sub    = labor + mat;
+    basePrice = sub * (1 + profit / 100);
+    breakdown = [
+      ['Labor', `${hours}h × ${cur.sym}${rate} = ${fmtExact(labor)}`],
+      ['Materials', fmtExact(mat)],
+      ['Subtotal', fmtExact(sub)],
+      [`Profit margin (${profit}%)`, fmtExact(sub * profit / 100)],
+      ['Base price', fmtExact(basePrice)],
+    ];
+    infoText = `<strong>Time + materials formula:</strong> ${hours} hours × ${cur.sym}${rate}/h + ${cur.sym}${mat} materials + ${profit}% margin = ${fmtExact(basePrice)}.`;
+  }
+
+  // Apply gallery
+  const finalPrice = applyGallery(basePrice, galleryPct);
+  if (galleryPct > 0) {
+    breakdown.push([`Gallery commission added (${galleryPct}%)`, fmtExact(finalPrice - basePrice)]);
+    breakdown.push(['Final selling price', fmtExact(finalPrice)]);
+  }
+
+  // ── Display results ──
+  document.getElementById('res-price').textContent = fmt(finalPrice);
+  document.getElementById('res-sub').textContent   = galleryPct > 0
+    ? `You receive ${fmt(basePrice)} after ${galleryPct}% gallery commission`
+    : 'Before any commission';
+
+  let bHTML = '';
+  breakdown.forEach((row, i) => {
+    const isLast = i === breakdown.length - 1;
+    bHTML += `<div class="breakdown-row${isLast ? ' last' : ''}">
+      <span class="breakdown-label">${row[0]}</span>
+      <span class="breakdown-val">${row[1]}</span>
+    </div>`;
+  });
+  document.getElementById('res-breakdown').innerHTML = bHTML;
+  document.getElementById('res-info').innerHTML      = infoText;
+
+  // ── Compare all three methods ──
+  // Index: always use cm internally
+  const h1    = (parseFloat(document.getElementById('idx-h').value) || 40) * (unitIndex === 'in' ? 2.54 : 1);
+  const w1    = (parseFloat(document.getElementById('idx-w').value) || 30) * (unitIndex === 'in' ? 2.54 : 1);
+  const idx1  = parseFloat(document.getElementById('idx-custom').value) || activeCareerMid;
+  const mat1  = parseFloat(document.getElementById('idx-mat').value)    || 0;
+  const p1    = applyGallery((h1 + w1) * idx1 + mat1, galleryPct);
+
+  // Square area
+  const h2   = parseFloat(document.getElementById('sq-h').value)    || 16;
+  const w2   = parseFloat(document.getElementById('sq-w').value)    || 12;
+  const r2   = parseFloat(document.getElementById('sq-rate').value) || (unitSq === 'in' ? cur.sqIn.rate : cur.sqCm.rate);
+  const mat2 = parseFloat(document.getElementById('sq-mat').value)  || 0;
+  const p2   = applyGallery(h2 * w2 * r2 + mat2 * 2, galleryPct);
+
+  // Time + materials
+  const hours3  = parseFloat(document.getElementById('tm-hours').value)  || 8;
+  const rate3   = parseFloat(document.getElementById('tm-rate').value)   || cur.hourlyDefault;
+  const mat3    = parseFloat(document.getElementById('tm-mat').value)    || 30;
+  const profit3 = parseFloat(document.getElementById('tm-profit').value) || 20;
+  const p3      = applyGallery((hours3 * rate3 + mat3) * (1 + profit3 / 100), galleryPct);
+
+  const prices  = [p1, p2, p3];
+  const methods = ['Index formula', 'Square area', 'Time + materials'];
+  const notes   = ['European standard', 'US standard', 'Universal'];
+  const active  = ['index', 'sqarea', 'time'].indexOf(activeMethod);
+
+  let cHTML = '';
+  prices.forEach((p, i) => {
+    cHTML += `<div class="compare-card${i === active ? ' highlight' : ''}">
+      <div class="c-method">${methods[i]}</div>
+      <div class="c-price">${fmt(p)}</div>
+      <div class="c-note">${notes[i]}</div>
+    </div>`;
+  });
+  document.getElementById('compareGrid').innerHTML = cHTML;
+
+  document.getElementById('results').classList.add('visible');
+  document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+});
+
+// ─── Init ─────────────────────────────────────────────────────────────────
+buildCareerButtons();
+updateSqRateForUnit();
+</script>
+</body>
+</html>
